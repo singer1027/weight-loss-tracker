@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>减肥打卡 - 登录 / 注册</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            max-width: 420px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 32px 28px;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .logo h1 {
+            font-size: 1.9rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0 0 4px 0;
+        }
+        .logo p {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin: 0;
+        }
+        .tabs {
+            display: flex;
+            background: #ecf0f1;
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 24px;
+        }
+        .tab {
+            flex: 1;
+            padding: 9px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #7f8c8d;
+            transition: 0.2s;
+            user-select: none;
+        }
+        .tab.active {
+            background: white;
+            color: #2c3e50;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        .form-group {
+            margin-bottom: 14px;
+        }
+        label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 6px;
+        }
+        label small {
+            font-weight: normal;
+            color: #95a5a6;
+        }
+        input[type=text],
+        input[type=password] {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            background: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            color: #2c3e50;
+        }
+        input[type=text]:focus,
+        input[type=password]:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52,152,219,0.12);
+        }
+        .submit-btn {
+            width: 100%;
+            background: #3498db;
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(52,152,219,0.3);
+            transition: opacity 0.2s, transform 0.2s;
+            margin-top: 6px;
+        }
+        .submit-btn:hover:not(:disabled) {
+            opacity: 0.9;
+            transform: scale(0.99);
+        }
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .message {
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.84rem;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .message.error {
+            background: #fdecea;
+            color: #c0392b;
+            border: 1px solid #f5c6cb;
+        }
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .note {
+            font-size: 0.75rem;
+            color: #95a5a6;
+            text-align: center;
+            margin-top: 20px;
+        }
+        @media (max-width: 480px) {
+            .container {
+                padding: 24px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo">
+        <h1>🏃‍♀️ 减肥打卡</h1>
+        <p>记录每一天，坚持就是胜利</p>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" data-tab="login">登录</div>
+        <div class="tab" data-tab="register">注册</div>
+    </div>
+
+    <div id="message" class="message"></div>
+
+    <!-- 登录表单 -->
+    <div id="login-form">
+        <div class="form-group">
+            <label>用户名</label>
+            <input type="text" id="login-username" placeholder="请输入用户名" autocomplete="username">
+        </div>
+        <div class="form-group">
+            <label>密码</label>
+            <input type="password" id="login-password" placeholder="请输入密码" autocomplete="current-password">
+        </div>
+        <button class="submit-btn" id="login-btn">登录</button>
+    </div>
+
+    <!-- 注册表单 -->
+    <div id="register-form" style="display:none;">
+        <div class="form-group">
+            <label>用户名 <small>（2-20 个字符）</small></label>
+            <input type="text" id="reg-username" placeholder="请设置用户名" autocomplete="username">
+        </div>
+        <div class="form-group">
+            <label>密码 <small>（至少 6 位）</small></label>
+            <input type="password" id="reg-password" placeholder="请设置密码" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+            <label>确认密码</label>
+            <input type="password" id="reg-confirm" placeholder="请再次输入密码" autocomplete="new-password">
+        </div>
+        <button class="submit-btn" id="register-btn">注册</button>
+    </div>
+
+    <div class="note">数据安全存储于服务器，随时随地查看打卡记录</div>
+</div>
+
+<script>
+(function () {
+    // ── Tab 切换 ──────────────────────────────
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', function () {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            const target = this.dataset.tab;
+            document.getElementById('login-form').style.display    = target === 'login'    ? '' : 'none';
+            document.getElementById('register-form').style.display = target === 'register' ? '' : 'none';
+            hideMsg();
+        });
+    });
+
+    // ── 消息提示 ──────────────────────────────
+    function showMsg(text, type) {
+        const el = document.getElementById('message');
+        el.textContent = text;
+        el.className = 'message ' + type;
+        el.style.display = 'block';
+    }
+    function hideMsg() {
+        document.getElementById('message').style.display = 'none';
+    }
+
+    // ── 登录 ──────────────────────────────────
+    document.getElementById('login-btn').addEventListener('click', async function () {
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value;
+        if (!username || !password) { showMsg('请填写用户名和密码', 'error'); return; }
+
+        this.disabled = true;
+        this.textContent = '登录中…';
+        try {
+            const res  = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showMsg('登录成功，正在跳转…', 'success');
+                setTimeout(() => { window.location.href = '/record'; }, 600);
+            } else {
+                showMsg(data.error || '登录失败', 'error');
+            }
+        } catch {
+            showMsg('网络错误，请确认服务器已启动', 'error');
+        } finally {
+            this.disabled = false;
+            this.textContent = '登录';
+        }
+    });
+
+    // ── 注册 ──────────────────────────────────
+    document.getElementById('register-btn').addEventListener('click', async function () {
+        const username = document.getElementById('reg-username').value.trim();
+        const password = document.getElementById('reg-password').value;
+        const confirm  = document.getElementById('reg-confirm').value;
+
+        if (!username || !password || !confirm) { showMsg('请填写所有字段', 'error'); return; }
+        if (password !== confirm) { showMsg('两次密码输入不一致', 'error'); return; }
+
+        this.disabled = true;
+        this.textContent = '注册中…';
+        try {
+            const res  = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showMsg('注册成功，正在跳转…', 'success');
+                setTimeout(() => { window.location.href = '/record'; }, 600);
+            } else {
+                showMsg(data.error || '注册失败', 'error');
+            }
+        } catch {
+            showMsg('网络错误，请确认服务器已启动', 'error');
+        } finally {
+            this.disabled = false;
+            this.textContent = '注册';
+        }
+    });
+
+    // ── 回车快捷键 ────────────────────────────
+    document.getElementById('login-password').addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('login-btn').click();
+    });
+    document.getElementById('login-username').addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('login-password').focus();
+    });
+    document.getElementById('reg-confirm').addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('register-btn').click();
+    });
+})();
+</script>
+</body>
+</html>

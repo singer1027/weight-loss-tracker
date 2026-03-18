@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>30天减肥打卡（比例提示版）</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background: #f8f9fa;
+            margin: 0;
+            padding: 12px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 16px;
+        }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        h1 small {
+            font-size: 0.9rem;
+            font-weight: normal;
+            color: #7f8c8d;
+        }
+        .user-bar {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            color: #7f8c8d;
+            white-space: nowrap;
+        }
+        .user-bar #username-display {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .header-row {
+            display: grid;
+            grid-template-columns: 50px 70px 60px 70px 1fr 50px 1fr 80px 1fr;
+            gap: 4px;
+            background: #ecf0f1;
+            padding: 8px 4px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            align-items: center;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .day-row {
+            display: grid;
+            grid-template-columns: 50px 70px 60px 70px 1fr 50px 1fr 80px 1fr;
+            gap: 4px;
+            padding: 6px 4px;
+            border-bottom: 1px solid #e9ecef;
+            align-items: center;
+            background: white;
+        }
+        .day-row:hover {
+            background: #f8f9fa;
+        }
+        .day-row.disabled-row {
+            background-color: #f1f3f4;
+            opacity: 0.8;
+        }
+        .day-label {
+            font-weight: 600;
+            color: #2c3e50;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        input, select {
+            width: 100%;
+            padding: 6px 4px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            background: white;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        input:disabled, select:disabled {
+            background-color: #e9ecef;
+            color: #6c757d;
+            border-color: #ced4da;
+            cursor: not-allowed;
+        }
+        .checkbox-col {
+            text-align: center;
+        }
+        .checkbox-col input[type=checkbox] {
+            width: 20px;
+            height: 20px;
+            margin: 0;
+            accent-color: #2ecc71;
+        }
+        .random-btn {
+            background: #ffeaa7;
+            border: none;
+            border-radius: 20px;
+            padding: 4px 8px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            white-space: nowrap;
+            color: #2d3436;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .random-btn:hover:not(:disabled) {
+            background: #fdcb6e;
+        }
+        .random-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        button {
+            background: #3498db;
+            border: none;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(52,152,219,0.3);
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
+        button.secondary {
+            background: #95a5a6;
+            box-shadow: none;
+        }
+        button:hover {
+            opacity: 0.9;
+            transform: scale(0.98);
+        }
+        button.warning {
+            background: #e74c3c;
+        }
+        .note {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            margin-top: 12px;
+            text-align: center;
+        }
+        .mobile-hint {
+            display: none;
+            background: #fff3cd;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+            color: #856404;
+        }
+        /* 加载遮罩 */
+        #loading-mask {
+            position: fixed;
+            inset: 0;
+            background: rgba(248,249,250,0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: #2c3e50;
+            z-index: 999;
+        }
+        /* 保存状态提示 */
+        #save-status {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            background: #2ecc71;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.4s;
+            z-index: 100;
+        }
+        @media (max-width: 800px) {
+            .header-row, .day-row {
+                grid-template-columns: 40px 60px 50px 60px 1fr 40px 1fr 70px 1fr;
+                font-size: 0.7rem;
+            }
+            .random-btn {
+                padding: 2px 4px;
+                font-size: 0.6rem;
+            }
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 8px;
+            }
+            .header-row, .day-row {
+                grid-template-columns: 35px 55px 45px 55px 1fr 35px 1fr 65px 1fr;
+                gap: 2px;
+            }
+            input, select {
+                padding: 4px 2px;
+            }
+            .mobile-hint {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="loading-mask">⏳ 加载中…</div>
+<div id="save-status">✅ 已保存</div>
+
+<div class="container">
+    <h1>
+        🗓️ 30天减肥打卡
+        <small>目标: 108 → 98斤（勾选完成即锁定该行）</small>
+        <span class="user-bar">
+            👤 <span id="username-display"></span>
+            <button id="logout-btn" class="secondary" style="padding:5px 12px;font-size:0.78rem;box-shadow:none;">退出登录</button>
+        </span>
+    </h1>
+    <div class="mobile-hint">
+        ⚡ 横向滑动查看全部列 | 勾选"✔️"后该行锁定，无法修改
+    </div>
+
+    <!-- 表头 -->
+    <div class="header-row">
+        <div>日期</div>
+        <div>体重(斤)</div>
+        <div>腰围(cm)</div>
+        <div>大腿围(cm)</div>
+        <div>运动模式</div>
+        <div>✔️</div>
+        <div>午餐</div>
+        <div>下午加餐</div>
+        <div>晚餐</div>
+    </div>
+
+    <!-- 动态生成的30行 -->
+    <div id="days-container"></div>
+
+    <!-- 底部按钮 -->
+    <div class="footer">
+        <button id="resetAll" class="warning">🗑️ 重置所有记录</button>
+        <button id="exportCSV" class="secondary">📥 导出为CSV</button>
+    </div>
+    <div class="note">
+        ✅ 数据实时同步至服务器。勾选"完成"后该行所有控件锁定，不可编辑。<br>
+        如需修改已锁定行，请先取消勾选"完成"。
+    </div>
+</div>
+
+<script>
+(function () {
+    const sports = [
+        "1-🏸 羽毛球",
+        "2-🚶 快走",
+        "3-💃 健身操",
+        "4-🏃 间歇",
+        "5-🏃 游泳",
+        "6-🏃 带娃户外"
+    ];
+
+    let daysData = [];
+    const debounceTimers = {};
+
+    // ── 工具 ────────────────────────────────────
+    function escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function showSaveStatus() {
+        const el = document.getElementById('save-status');
+        el.style.opacity = '1';
+        clearTimeout(el._timer);
+        el._timer = setTimeout(() => { el.style.opacity = '0'; }, 1500);
+    }
+
+    // ── API 封装 ─────────────────────────────────
+    async function apiGet(url) {
+        const res = await fetch(url);
+        if (res.status === 401) { window.location.href = '/'; return null; }
+        return res.json();
+    }
+
+    async function apiPut(url, body) {
+        const res = await fetch(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        if (res.status === 401) { window.location.href = '/'; return null; }
+        return res.json();
+    }
+
+    // ── 保存单行（防抖 500ms） ────────────────────
+    function saveRow(dayIdx) {
+        clearTimeout(debounceTimers[dayIdx]);
+        debounceTimers[dayIdx] = setTimeout(async () => {
+            await apiPut(`/api/records/${dayIdx + 1}`, daysData[dayIdx]);
+            showSaveStatus();
+        }, 500);
+    }
+
+    // 立即保存（用于 checkbox）
+    async function saveRowNow(dayIdx) {
+        clearTimeout(debounceTimers[dayIdx]);
+        await apiPut(`/api/records/${dayIdx + 1}`, daysData[dayIdx]);
+        showSaveStatus();
+    }
+
+    // ── 渲染 ─────────────────────────────────────
+    const container = document.getElementById('days-container');
+
+    function render() {
+        let html = '';
+        daysData.forEach((day, idx) => {
+            const dayNum = idx + 1;
+            const doneChecked  = day.done ? 'checked' : '';
+            const disabledAttr = day.done ? 'disabled' : '';
+            const rowClass     = day.done ? 'day-row disabled-row' : 'day-row';
+
+            let sportOptions = `<option value="" ${day.sport === '' ? 'selected' : ''}>-- 请选择 --</option>`;
+            sports.forEach(s => {
+                const selected = (day.sport === s) ? 'selected' : '';
+                sportOptions += `<option value="${s}" ${selected}>${s}</option>`;
+            });
+
+            html += `
+                <div class="${rowClass}" data-day="${dayNum}">
+                    <div class="day-label">D${dayNum}</div>
+                    <div><input type="number" step="0.1" class="weight-input" value="${day.weight}" placeholder="斤" ${disabledAttr}></div>
+                    <div><input type="number" step="0.1" class="waist-input"  value="${day.waist}"  placeholder="cm" ${disabledAttr}></div>
+                    <div><input type="number" step="0.1" class="thigh-input"  value="${day.thigh}"  placeholder="cm" ${disabledAttr}></div>
+                    <div style="display:flex;gap:2px;">
+                        <select class="sport-select" style="flex:1;" ${disabledAttr}>${sportOptions}</select>
+                        <button class="random-btn" data-day="${dayNum}" ${disabledAttr}>🎲</button>
+                    </div>
+                    <div class="checkbox-col"><input type="checkbox" class="done-checkbox" ${doneChecked}></div>
+                    <div><input type="text" class="lunch-input"  value="${escapeHtml(day.lunch)}"  placeholder="例:碳水+蛋白质+2蔬菜" ${disabledAttr}></div>
+                    <div><input type="text" class="snack-input"  value="${escapeHtml(day.snack)}"  placeholder="例:无糖酸奶" ${disabledAttr}></div>
+                    <div><input type="text" class="dinner-input" value="${escapeHtml(day.dinner)}" placeholder="例:高蛋白质+轻食" ${disabledAttr}></div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+        bindEvents();
+    }
+
+    function bindEvents() {
+        document.querySelectorAll('.day-row').forEach(row => {
+            const idx      = parseInt(row.dataset.day, 10) - 1;
+            const checkbox = row.querySelector('.done-checkbox');
+            const inputs   = row.querySelectorAll('input:not([type=checkbox]), select');
+            const randomBtn = row.querySelector('.random-btn');
+
+            function setDisabled(disabled) {
+                inputs.forEach(inp => inp.disabled = disabled);
+                if (randomBtn) randomBtn.disabled = disabled;
+                row.classList.toggle('disabled-row', disabled);
+            }
+
+            checkbox.addEventListener('change', async function () {
+                daysData[idx].done = this.checked;
+                setDisabled(this.checked);
+                await saveRowNow(idx);
+            });
+
+            row.querySelector('.weight-input')?.addEventListener('input', function () {
+                daysData[idx].weight = this.value; saveRow(idx);
+            });
+            row.querySelector('.waist-input')?.addEventListener('input', function () {
+                daysData[idx].waist = this.value; saveRow(idx);
+            });
+            row.querySelector('.thigh-input')?.addEventListener('input', function () {
+                daysData[idx].thigh = this.value; saveRow(idx);
+            });
+            row.querySelector('.sport-select')?.addEventListener('change', function () {
+                daysData[idx].sport = this.value; saveRow(idx);
+            });
+            row.querySelector('.lunch-input')?.addEventListener('input', function () {
+                daysData[idx].lunch = this.value; saveRow(idx);
+            });
+            row.querySelector('.snack-input')?.addEventListener('input', function () {
+                daysData[idx].snack = this.value; saveRow(idx);
+            });
+            row.querySelector('.dinner-input')?.addEventListener('input', function () {
+                daysData[idx].dinner = this.value; saveRow(idx);
+            });
+
+            if (randomBtn) {
+                randomBtn.addEventListener('click', function () {
+                    if (checkbox.checked) return;
+                    const randomSport = sports[Math.floor(Math.random() * sports.length)];
+                    const select = row.querySelector('.sport-select');
+                    if (select) {
+                        select.value = randomSport;
+                        daysData[idx].sport = randomSport;
+                        saveRow(idx);
+                    }
+                });
+            }
+        });
+    }
+
+    // ── 重置 ─────────────────────────────────────
+    document.getElementById('resetAll').addEventListener('click', async function () {
+        if (!confirm('确定要重置所有记录吗？当前数据将丢失。')) return;
+        await fetch('/api/records', { method: 'DELETE' });
+        daysData = Array.from({ length: 30 }, (_, i) => ({
+            date: i + 1, weight: '', waist: '', thigh: '',
+            sport: '', done: false, lunch: '', snack: '', dinner: '',
+        }));
+        render();
+        showSaveStatus();
+    });
+
+    // ── 导出 CSV ─────────────────────────────────
+    document.getElementById('exportCSV').addEventListener('click', function () {
+        let csv = "日期,体重(斤),腰围(cm),大腿围(cm),运动模式,已完成,午餐,下午加餐,晚餐\n";
+        daysData.forEach(d => {
+            const row = [
+                d.date, d.weight, d.waist, d.thigh, d.sport,
+                d.done ? '是' : '否',
+                d.lunch, d.snack, d.dinner,
+            ].map(cell => {
+                if (typeof cell === 'string' && (cell.includes(',') || cell.includes('"'))) {
+                    return `"${cell.replace(/"/g, '""')}"`;
+                }
+                return cell;
+            }).join(',');
+            csv += row + '\n';
+        });
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', '减肥打卡30天.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+
+    // ── 退出登录 ─────────────────────────────────
+    document.getElementById('logout-btn').addEventListener('click', async function () {
+        await fetch('/api/logout', { method: 'POST' });
+        window.location.href = '/';
+    });
+
+    // ── 初始化：验证登录 → 加载数据 ──────────────
+    (async function init() {
+        const mask = document.getElementById('loading-mask');
+        try {
+            // 检查登录状态
+            const user = await apiGet('/api/user');
+            if (!user) return; // apiGet 会在 401 时跳转
+            document.getElementById('username-display').textContent = user.username;
+
+            // 加载打卡数据
+            const data = await apiGet('/api/records');
+            if (!data) return;
+            daysData = data.records;
+            render();
+        } catch (e) {
+            mask.textContent = '⚠️ 加载失败，请刷新页面';
+            return;
+        }
+        mask.style.display = 'none';
+    })();
+})();
+</script>
+</body>
+</html>
