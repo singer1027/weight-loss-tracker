@@ -17,7 +17,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # 数据库辅助
 # ──────────────────────────────────────────────
 def get_db():
-    return pymysql.connect(
+    kwargs = dict(
         host=config.DB_HOST,
         port=config.DB_PORT,
         user=config.DB_USER,
@@ -26,6 +26,14 @@ def get_db():
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor,
     )
+    # TiDB Cloud Serverless 需要 SSL
+    if config.DB_SSL:
+        import ssl as _ssl
+        ctx = _ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = _ssl.CERT_NONE
+        kwargs['ssl'] = ctx
+    return pymysql.connect(**kwargs)
 
 
 def login_required(f):
