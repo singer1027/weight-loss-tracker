@@ -26,13 +26,9 @@ def get_db():
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor,
     )
-    # TiDB Cloud Serverless 需要 SSL
+    # TiDB Cloud Serverless 需要 SSL（dict 格式保证 SNI 正确传递）
     if config.DB_SSL:
-        import ssl as _ssl
-        ctx = _ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = _ssl.CERT_NONE
-        kwargs['ssl'] = ctx
+        kwargs['ssl'] = {'verify_cert': False, 'verify_identity': False}
     return pymysql.connect(**kwargs)
 
 
